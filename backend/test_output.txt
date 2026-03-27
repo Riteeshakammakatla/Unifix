@@ -1,0 +1,13 @@
+--- Serializer Inspection ---
+Serializer fields: ['email', 'password']
+User USERNAME_FIELD: email
+
+--- Test with EMAIL key ---
+Payload: {'email': 'admin@campus.edu', 'password': 'admin123'}
+Status Code: 200
+Response: {"refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NDYwODgzNiwiaWF0IjoxNzc0MDA0MDM2LCJqdGkiOiJkMzhmOTA2YTI1MjM0ZWQzOWQ0NDdhMDNiOGZkMzBiNiIsInVzZXJfaWQiOiIxIiwicm9sZSI6ImFkbWluIiwibmFtZSI6IkFkbWluIFVzZXIiLCJlbWFpbCI6ImFkbWluQGNhbXB1cy5lZHUifQ.cjcq_Sk_SqvMoWw_bkB-qNxjRRiSY7aYIIXAOU5J49w","access":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzc0MDQ3MjM2LCJpYXQiOjE3NzQwMDQwMzYsImp0aSI6IjYwMmEzNThhNzM4YzQ0Njk4Zjk5ZWJjMzY2YzU3YmU2IiwidXNlcl9pZCI6IjEiLCJyb2xlIjoiYWRtaW4iLCJuYW1lIjoiQWRtaW4gVXNlciIsImVtYWlsIjoiYWRtaW5AY2FtcHVzLmVkdSJ9.2qfG3F0-Q8y0cHML5yt-8evUN74ZlI3ns4r6AW2AX5E"}
+
+--- Test with USERNAME key ---
+Payload: {'username': 'admin@campus.edu', 'password': 'admin123'}
+Status Code: 400
+Response: {"email":["This field is required."]}
