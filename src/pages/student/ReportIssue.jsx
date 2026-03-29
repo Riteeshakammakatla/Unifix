@@ -31,6 +31,7 @@ const ReportIssue = () => {
       formData.append('title', form.title);
       formData.append('description', form.description);
       formData.append('location', form.location);
+      formData.append('category', form.category);
       if (image) formData.append('image', image);
 
       const res = await issuesAPI.create(formData);
@@ -158,6 +159,24 @@ const ReportIssue = () => {
               onChange={handleChange}
             />
           </div>
+          <div className="input-group">
+            <label className="input-label">Category *</label>
+            <select
+              name="category"
+              className="input-field"
+              value={form.category}
+              onChange={handleChange}
+            >
+              <option value="">Select Category</option>
+              <option value="Electrical">Electrical</option>
+              <option value="Plumbing">Plumbing</option>
+              <option value="Cleaning">Cleaning</option>
+              <option value="Network">Network</option>
+              <option value="Carpentry">Carpentry</option>
+              <option value="Infrastructure">Infrastructure</option>
+              <option value="General">General</option>
+            </select>
+          </div>
 
           <div className="input-group">
             <label className="input-label">Photo (Optional)</label>
@@ -169,7 +188,7 @@ const ReportIssue = () => {
               cursor: 'pointer',
               transition: 'all 0.2s',
             }}
-            onClick={() => document.getElementById('file-input').click()}
+              onClick={() => document.getElementById('file-input').click()}
             >
               <Upload size={24} style={{ margin: '0 auto var(--space-2)', color: 'var(--color-text-secondary)' }} />
               <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>

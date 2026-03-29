@@ -2,6 +2,18 @@ from django.db import models
 from django.conf import settings
 
 
+class SLA(models.Model):
+    """Service Level Agreement for issue categories."""
+    category = models.CharField(max_length=100, unique=True)
+    response_time = models.IntegerField(help_text="Response time in hours")
+    resolution_time = models.IntegerField(help_text="Resolution time in hours")
+
+    class Meta:
+        verbose_name_plural = "SLAs"
+
+    def __str__(self):
+        return f"{self.category} ({self.resolution_time}h)"
+
 class Issue(models.Model):
     """Campus maintenance issue reported by a student."""
 
@@ -39,10 +51,16 @@ class Issue(models.Model):
     llm_category = models.CharField(max_length=100, blank=True, default='')
     llm_priority = models.CharField(max_length=20, blank=True, default='')
     llm_duplicate_score = models.FloatField(default=0.0)
+    ai_summary = models.TextField(blank=True, default='')
+    duplicate_score = models.FloatField(default=0.0)
+    override_llm = models.BooleanField(default=False)
 
     # SLA tracking
     sla_response_deadline = models.DateTimeField(null=True, blank=True)
     sla_resolution_deadline = models.DateTimeField(null=True, blank=True)
+    deadline_time = models.DateTimeField(null=True, blank=True)
+    is_escalated = models.BooleanField(default=False)
+    escalated_at = models.DateTimeField(null=True, blank=True)
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

@@ -7,7 +7,7 @@ from datetime import timedelta
 
 from .models import Issue, IssueTimeline
 from .serializers import IssueSerializer, IssueCreateSerializer, IssueAssignSerializer
-from .llm_service import classify_issue
+from llm.llm_service import LLMService
 from apps.authentication.models import User
 from apps.authentication.permissions import IsAdmin
 from apps.notifications.utils import create_notification
@@ -29,6 +29,34 @@ class IssueListCreateView(generics.ListCreateAPIView):
         user = self.request.user
         queryset = Issue.objects.select_related('created_by', 'assigned_supervisor').prefetch_related('timeline')
 
+        # Check SLAs lazily (Option A)
+        now = timezone.now()
+        escalated_issues = Issue.objects.filter(
+            status__in=['Open', 'Assigned', 'In Progress'],
+            deadline_time__lt=now,
+            is_escalated=False
+        )
+        
+        if escalated_issues.exists():
+            admins = User.objects.filter(role='admin')
+            for issue in escalated_issues:
+                issue.is_escalated = True
+                issue.escalated_at = now
+                issue.status = 'Escalated'
+                issue.save(update_fields=['is_escalated', 'escalated_at', 'status'])
+                
+                IssueTimeline.objects.create(
+                    issue=issue, status='Escalated',
+                    note='SLA Deadline missed. Auto-escalated.',
+                    created_by=None
+                )
+                
+                for admin in admins:
+                    create_notification(
+                        user=admin,
+                        message=f'SLA VIOLATION: Issue "{issue.title}" has been escalated.'
+                    )
+
         if user.role == 'student':
             queryset = queryset.filter(created_by=user)
         elif user.role == 'supervisor':
@@ -45,27 +73,66 @@ class IssueListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         issue = serializer.save(created_by=self.request.user)
 
-        # LLM classification
-        llm_result = classify_issue(issue.description)
-        issue.category = llm_result['category']
-        issue.llm_category = llm_result['category']
-        issue.priority = llm_result['priority']
-        issue.llm_priority = llm_result['priority']
-        issue.llm_duplicate_score = llm_result['duplicate_score']
-
-        # SLA deadlines based on priority
-        sla_hours = {'Critical': 2, 'High': 8, 'Medium': 24, 'Low': 72}
-        hours = sla_hours.get(issue.priority, 24)
-        issue.sla_response_deadline = timezone.now() + timedelta(hours=hours)
-        issue.sla_resolution_deadline = timezone.now() + timedelta(hours=hours * 3)
-
+        # 1. Duplicate Detection
+        recent_issues = list(Issue.objects.exclude(id=issue.id).order_by('-created_at')[:10].values('id', 'title', 'description'))
+        
+        llm = LLMService()
+        
+        duplicate_result = llm.detect_duplicate(issue.description, recent_issues)
+        issue.duplicate_score = duplicate_result.get('duplicate_score', 0.0)
+        if issue.duplicate_score > 0.7:
+             # Just note it, we don't drop the issue based on requirements.
+             pass
+        
+        # 2. Analyze Issue
+        analysis = llm.analyze_issue(issue.description)
+        issue.category = analysis.get('category', 'General')
+        issue.llm_category = issue.category
+        issue.priority = analysis.get('priority', 'Medium')
+        issue.llm_priority = issue.priority
+        issue.ai_summary = analysis.get('summary', '')
+        department = analysis.get('department', 'General')
+        
+        # 3. SLA Assignment
+        from .models import SLA
+        
+        try:
+            sla = SLA.objects.get(category=issue.category)
+            issue.deadline_time = timezone.now() + timedelta(hours=sla.resolution_time)
+            issue.sla_response_deadline = timezone.now() + timedelta(hours=sla.response_time)
+            issue.sla_resolution_deadline = issue.deadline_time
+        except SLA.DoesNotExist:
+            # fallback
+            issue.deadline_time = timezone.now() + timedelta(hours=48)
+            
+        # 4. Supervisor Assignment
+        print(f"[DEBUG] Attempting auto-assignment for department: {department}")
+        supervisors = User.objects.filter(role='supervisor', department__iexact=department)
+        if supervisors.exists():
+            issue.assigned_supervisor = supervisors.first()
+            issue.status = 'Assigned'
+            print(f"[DEBUG] Assigned to: {issue.assigned_supervisor.username}")
+        else:
+            print(f"[DEBUG] No supervisor found for department: {department}")
+            
         issue.save()
 
         # Create timeline entry
         IssueTimeline.objects.create(
-            issue=issue, status='Open',
+            issue=issue, status=issue.status,
             note='Issue reported', created_by=self.request.user
         )
+        
+        if issue.assigned_supervisor:
+            IssueTimeline.objects.create(
+                issue=issue, status='Assigned',
+                note=f'Auto-assigned by LLM to {issue.assigned_supervisor.name}',
+                created_by=None
+            )
+            create_notification(
+                user=issue.assigned_supervisor,
+                message=f'New issue auto-assigned to you: "{issue.title}"'
+            )
 
 
 class IssueDetailView(generics.RetrieveUpdateAPIView):
@@ -75,8 +142,22 @@ class IssueDetailView(generics.RetrieveUpdateAPIView):
     queryset = Issue.objects.select_related('created_by', 'assigned_supervisor').prefetch_related('timeline')
 
     def perform_update(self, serializer):
-        old_status = self.get_object().status
+        old_issue = self.get_object()
+        old_status = old_issue.status
+        old_priority = old_issue.priority
+        old_category = old_issue.category
+        old_supervisor = old_issue.assigned_supervisor
+        
         issue = serializer.save()
+        
+        # Check for admin overrides
+        if getattr(self.request.user, 'role', '') == 'admin':
+            if (issue.priority != old_priority or 
+                issue.category != old_category or 
+                issue.assigned_supervisor != old_supervisor):
+                issue.override_llm = True
+                issue.save(update_fields=['override_llm'])
+
         new_status = issue.status
 
         if old_status != new_status:

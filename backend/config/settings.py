@@ -4,12 +4,22 @@ Django settings for Campus Issue Management System.
 import os
 from pathlib import Path
 from datetime import timedelta
+import environ
+
+# Initialize environment variables
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-campus-issue-mgmt-change-in-production'
+# Take environment variables from .env file
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-DEBUG = True
+SECRET_KEY = env('SECRET_KEY')
+
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = ['*']
 
@@ -119,3 +129,5 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+GROQ_API_KEY = env('GROQ_API_KEY', default='')

@@ -26,20 +26,24 @@ class IssueSerializer(serializers.ModelSerializer):
             'status', 'image', 'created_by', 'created_by_name',
             'assigned_supervisor', 'assigned_supervisor_name',
             'llm_category', 'llm_priority', 'llm_duplicate_score',
+            'ai_summary', 'duplicate_score', 'override_llm',
             'sla_response_deadline', 'sla_resolution_deadline',
+            'deadline_time', 'is_escalated', 'escalated_at',
             'created_at', 'updated_at', 'resolved_at',
             'resolution_notes', 'resolution_proof', 'timeline',
         ]
         read_only_fields = [
             'id', 'created_by', 'created_at', 'updated_at',
             'llm_category', 'llm_priority', 'llm_duplicate_score',
+            'duplicate_score', 'deadline_time', 'escalated_at',
+            'ai_summary',
         ]
 
 
 class IssueCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Issue
-        fields = ['title', 'description', 'location', 'image']
+        fields = ['title', 'description', 'location', 'category', 'image']
 
 
 class IssueAssignSerializer(serializers.Serializer):
