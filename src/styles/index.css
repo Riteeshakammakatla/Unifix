@@ -1,0 +1,222 @@
+/* --- Global Variables — Pastel Premium Theme --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Pastel Premium Palette */
+  --color-primary: #1A202C;
+  /* Dark text */
+  --color-secondary: #EDF2F7;
+  /* Subtle backgrounds */
+  --color-accent: #e59f9e;
+  /* Signature Pastel Pink */
+  --color-muted: #F8FAFC;
+  --color-background: #F9FBFC;
+  /* Page background */
+  --color-button-hover: #EBB8B7;
+
+  --color-surface: #FFFFFF;
+  /* High-elevation items */
+  --color-card: #FFFFFF;
+  --color-section: #EDF2F7;
+
+  --color-text-primary: #1A202C;
+  --color-text-secondary: #718096;
+
+  --color-border: rgba(0, 0, 0, 0.05);
+  --color-border-light: rgba(0, 0, 0, 0.02);
+
+  /* Status Colors (Maintain pastel tone) */
+  --color-success: #68D391;
+  --color-success-bg: rgba(104, 211, 145, 0.15);
+  --color-warning: #F6AD55;
+  --color-warning-bg: rgba(246, 173, 85, 0.15);
+  --color-error: #FC8181;
+  --color-error-bg: rgba(252, 129, 129, 0.15);
+  --color-info: #63B3ED;
+  --color-info-bg: rgba(99, 179, 237, 0.15);
+
+  --color-status-open: #F6AD55;
+  --color-status-assigned: #63B3ED;
+  --color-status-inprogress: #F6AD55;
+  --color-status-resolved: #68D391;
+  --color-status-escalated: #FC8181;
+
+  /* Typography */
+  --font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 15px;
+  --font-size-lg: 18px;
+  --font-size-xl: 22px;
+  --font-size-2xl: 28px;
+  --font-size-3xl: 36px;
+
+  /* Spacing Scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Border Radius (Slightly softer) */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* Shadows (Deep and soft) */
+  --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 10px 32px -5px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 48px -12px rgba(0, 0, 0, 0.08);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.03);
+}
+
+/* --- Reset & Base Styles --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-background);
+  color: var(--color-text-secondary);
+  /* Text -> secondary per rules */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  text-align: left;
+  border: none;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--color-primary);
+  /* Headings -> primary per rules */
+  line-height: 1.3;
+}
+
+a {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-accent);
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-secondary);
+}
+
+/* Page Container */
+.page-container {
+  padding: var(--space-6);
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+/* Chart container */
+.chart-container {
+  height: 300px;
+  width: 100%;
+}
+
+/* Grid layouts */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+@media (max-width: 768px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
